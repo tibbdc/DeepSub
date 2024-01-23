@@ -10,10 +10,8 @@ Copyright (c) 2024 by DengRui, All Rights Reserved.
 '''
 
 DATA_PATH = './DATA/Dataset_0724.csv'
-FEATURE_PATH = './featurebank/feature_esm2.feather'
-FEATURE_PATH_CHECKPOINT = './featurebank/feature_esm2.feather'
-
-MODEL_SAVE_PATH = './model/deepsub_20240120.h5'
+FEATURE_PATH = './featurebank/'
+MODEL_SAVE_PATH = './model/'
 INPUT_SHAPE = (1, 1280)
 NUM_CLASSES = 10
 BATCH_SIZE = 1024

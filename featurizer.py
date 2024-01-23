@@ -32,7 +32,7 @@ def load_data(path=cfg.DATA_PATH):
     
     """  
     dataset = pd.read_csv(path)
-    # dataset = dataset.sample(1000)
+    dataset = dataset.sample(1000)
     dataset = dataset.rename(columns={'Entry':'uniprot_id','Sequence':'seq'})
     df_data = list(zip(dataset.uniprot_id.index,dataset.seq))
     return df_data,dataset
@@ -93,6 +93,21 @@ def get_rep_seq(sequences,model,batch_converter,alphabet):
     res.columns = ['f'+str(i) for i in range (0,res.shape[1])]
     return res
 
+def save_feature(folder_path_feature,res):
+    """
+    Save the embedding results to a feather file.
+    
+    Args:
+        folder_path_feature (str): The path to the folder where the feather file will be saved.
+        res (pd.DataFrame): The embedding results for the given sequences.
+        
+    Returns: None
+    
+    """
+ 
+    res.to_feather(f'{folder_path_feature}feature_esm2.feather')
+
+
 
 def main():
     
@@ -111,6 +126,12 @@ def main():
     
     # Set model
     model,batch_converter,alphabet = set_model()
+    
+    # check dir
+    folder_path_feature = cfg.FEATURE_PATH
+    
+    if not os.path.exists(folder_path_feature):
+        os.makedirs(folder_path_feature)
     
     # Embedding
     stride =2
@@ -133,9 +154,10 @@ def main():
         rep33 = rep33[cols]
         all_results = pd.concat([all_results, rep33], ignore_index=True)
         if end%500 == 0:
-            all_results.to_feather(cfg.FEATURE_PATH_CHECKPOINT)
-
-    all_results.to_feather(cfg.FEATURE_PATH)
+            all_results.to_feather(f'{folder_path_feature}feature_esm2_checkpoint.feather')
+            
+    # save feature
+    save_feature(folder_path_feature,all_results)
     
 if __name__ == '__main__':
     main()

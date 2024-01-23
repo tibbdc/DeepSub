@@ -32,7 +32,7 @@ def load_and_preprocess_data():
             - 'label': Original label value.
     """
     dataset = pd.read_csv(cfg.DATA_PATH)
-    feature = pd.read_feather(cfg.FEATURE_PATH)
+    feature = pd.read_feather(f'{cfg.FEATURE_PATH}feature_esm2.feather')
     dataset = dataset.rename(columns={'Entry': 'uniprot_id', 'Sequence': 'seq'})
     data_df = dataset.merge(feature, on='uniprot_id', how='left')
     data_df = data_df[~data_df.f1.isnull()]
@@ -80,4 +80,9 @@ if __name__ =="__main__":
     )
     
     # Save the model.
-    gru_attention_model.save_model(cfg.MODEL_SAVE_PATH)
+    folder_path = cfg.MODEL_SAVE_PATH
+    
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        
+    gru_attention_model.save_model(f'{cfg.MODEL_SAVE_PATH}deepsub_new.h5')
