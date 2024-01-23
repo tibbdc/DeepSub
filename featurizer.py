@@ -32,7 +32,7 @@ def load_data(path=cfg.DATA_PATH):
     
     """  
     dataset = pd.read_csv(path)
-    dataset = dataset.sample(1000)
+    # dataset = dataset.sample(1000)
     dataset = dataset.rename(columns={'Entry':'uniprot_id','Sequence':'seq'})
     df_data = list(zip(dataset.uniprot_id.index,dataset.seq))
     return df_data,dataset
