@@ -45,7 +45,15 @@ def get_dataset_from_uniprot(uniprot_data_file, dataset_outfile):
     uniprot_data = uniprot_data.dropna(subset=['Subunit structure'])
     uniprot_data = uniprot_data.astype(str)
     uniprot_data['Subunit structure'] = uniprot_data['Subunit structure'].apply(lambda x: x + ' ')
-    uniprot_data['Subunit structure'] = uniprot_data['Subunit structure'].apply(lambda x: x.split('.')[0] + '.' if x.split('.')[1][0] == ' ' else x.split('.')[0] + '.' + x.split('.')[1] + '.')
+    uniprot_data['Subunit structure'] = uniprot_data['Subunit structure'].apply(
+        
+        lambda x: x.split('.')[0] + '.' 
+        if len(x.split('.')) > 1 and x.split('.')[1] and x.split('.')[1][0] == ' ' 
+        else x.split('.')[0] + '.' + x.split('.')[1] + '.' 
+        if len(x.split('.')) > 1 
+        else x
+    )
+    # uniprot_data['Subunit structure'] = uniprot_data['Subunit structure'].apply(lambda x: x.split('.')[0] + '.' if x.split('.')[1][0] == ' ' else x.split('.')[0] + '.' + x.split('.')[1] + '.')
     uniprot_data = uniprot_data[uniprot_data['Subunit structure'].str.contains('Monomer|monomer|Homodimer|homodimer|Homotrimer|homotrimer|Homotetramer|homotetramer|Homopentamer|homopentamer|Homohexamer|homohexamer|Homoheptamer|homoheptamer|Homooctamer|homooctamer|Homodecamer|homodecamer|Homododecamer|homododecamer')]
     uniprot_data = uniprot_data[~uniprot_data['Subunit structure'].str.contains('(By similarity)|(Probable)|(Potential)')]
     uniprot_data['label'] = '0'
