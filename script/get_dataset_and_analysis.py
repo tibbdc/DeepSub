@@ -256,12 +256,12 @@ def split_ECnumber(uniprot_EC_data):
     new_rows = []
 
     for index, row in uniprot_EC_data.iterrows():
-        ec_numbers = row['EC number'].split(';')  # 按分号分割EC号码
+        ec_numbers = row['EC number'].split(';')  
         
         for ec in ec_numbers:
-            new_row = row.copy()  # 复制原始行的内容
-            new_row['EC number'] = ec.strip()  # 更新EC号码列
-            new_rows.append(new_row)  # 将新行添加到列表中
+            new_row = row.copy() 
+            new_row['EC number'] = ec.strip() 
+            new_rows.append(new_row) 
 
     uniprot_EC_data_new = pd.DataFrame(new_rows)
 
@@ -300,19 +300,18 @@ def get_ec_subunit_num_ratio(dataset_outfile,entry_EC_file,ec_subunit_num_ratio_
 
     value_counts = EC_label['length_set'].value_counts()
     
-    plt.figure(figsize=(8, 8))  # 设置图形大小
+    plt.figure(figsize=(8, 8))  
     patches, texts = plt.pie(
             value_counts.values,
             labels=value_counts.index,
             startangle=140,
             colors=sns.color_palette(palette='Accent',desat=0.7),
-            explode=(0, 0.1, 0.1, 0.1, 0.2), # 突出显示饼
+            explode=(0, 0.1, 0.1, 0.1, 0.2), 
             labeldistance=1.2,
             radius=0.9,
             counterclock=False,
-            textprops={'color':'b',#文本颜色
-                    'fontsize':20,#文本大小
-                    # 'fontfamily':'Microsoft JhengHei',#设置微软雅黑字体
+            textprops={'color':'b',
+                    'fontsize':20,
                         }
             )
 
@@ -320,31 +319,29 @@ def get_ec_subunit_num_ratio(dataset_outfile,entry_EC_file,ec_subunit_num_ratio_
     legend_title = 'Type of Homomeric Oligmers'
     legend_name = [1,2,3,4,5]
 
-    plt.legend(patches, legend_name,#添加图例
+    plt.legend(patches, legend_name,
             title=legend_title,
             loc="center left",
             bbox_to_anchor=(1, 0, 0.5, 1),
-            ncol=2,#控制图例中按照两列显示，默认为一列显示，
+            ncol=2,
             )
 
-    plt.title('Ration of Subunit Types for EC')  # 设置标题
+    plt.title('Ration of Subunit Types for EC')
     plt.savefig(ec_subunit_num_ratio_png,dpi =300,bbox_inches='tight')
     plt.show()
     
 
 def plot_heatmap(heatmap_data, ec_subunit_num_heatmap_png):
     plt.figure(dpi=120)
-    sns.heatmap(data=heatmap_data,#矩阵数据集，数据的index和columns分别为heatmap的y轴方向和x轴方向标签               
-                # vmin=0,#图例（右侧颜色条color bar）中最小显示值 
-                # vmax=1000,#图例（右侧颜色条color bar）中最大显示值
-                cmap=plt.get_cmap('Greens'),#matplotlib中的颜色盘'Greens_r',
-                center=230,#color bar的中心数据值大小，可以控制整个热图的颜盘深浅
-                linewidths=1,#每个格子边框宽度，默认为0
+    sns.heatmap(data=heatmap_data,               
+                cmap=plt.get_cmap('Greens'),
+                center=230,
+                linewidths=1,
                 
                 cbar=True,
-                cbar_kws={'label': 'EC count', #color bar的名称
-                            'orientation': 'vertical',#color bar的方向设置，默认为'vertical'，可水平显示'horizontal'
-                            "ticks":np.arange(0,500,100),#color bar中刻度值范围和间隔
+                cbar_kws={'label': 'EC count',
+                            'orientation': 'vertical',
+                            "ticks":np.arange(0,500,100),
                             }
                 )
 
@@ -374,7 +371,7 @@ def get_ec_subunit_num_heatmap(dataset_outfile,entry_EC_file,ec_subunit_num_heat
     EC_label['uniprot_label_set'] = EC_label['uniprot_label'].apply(lambda x: list(set(x))).apply(sorted)
     EC_label['length_set'] = EC_label['uniprot_label_set'].apply(lambda x:len(x))
     
-    EC_label=EC_label[EC_label['length_set']>1] # 只要出现多种亚基数量的EC号
+    EC_label=EC_label[EC_label['length_set']>1]
     
     # 构建热图数据
     labels_list = ['Monomer',
@@ -395,15 +392,12 @@ def get_ec_subunit_num_heatmap(dataset_outfile,entry_EC_file,ec_subunit_num_heat
     label_dict['Homododecamer'] = 12
 
 
-    # 创建一个 10x10 的矩阵，这里使用行标和列标的和作为示例
     data = np.zeros((10, 10))  # 初始化一个全零的10x10数组
     # for i,xlabel in enumerate(labels_list):
     #     for j,ylabel in enumerate(labels_list):
     #         pass
-    # 创建 DataFrame，设置行标和列标
     heatmap_data = pd.DataFrame(data, index=labels_list, columns=labels_list)
 
-    # 填充数据
     for index_name in labels_list:
         for columns_name in labels_list:
             value = 0
