@@ -7,7 +7,6 @@ import numpy as np
 from itertools import product
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pandarallel import pandarallel
 
 def calculate_and_save_sequence_identity(result1, sequence_alignment_outfile):
     """
@@ -20,7 +19,7 @@ def calculate_and_save_sequence_identity(result1, sequence_alignment_outfile):
     Returns:
     pd.DataFrame: Updated DataFrame with sequence identity values.
     """
-    pandarallel.initialize(progress_bar=True, nb_workers=30)
+    pandarallel.initialize(progress_bar=True, nb_workers=150)
 
     result1['identity'] = result1.parallel_apply(sequence_alignment, axis=1)
 
@@ -168,8 +167,9 @@ def create_protein_pairs_with_sequences(EC_label_greater_than_2, uniprot_file):
                 }
                 new_rows.append(new_row)
 
-        result = result.append(new_rows, ignore_index=True)
-
+        # result = result.append(new_rows, ignore_index=True)
+        result = pd.concat([result, pd.DataFrame(new_rows)], ignore_index=True)
+        
     # Add protein sequences
     uniprot_data = pd.read_csv(uniprot_file, usecols=['Entry', 'Sequence'])
 

@@ -1,0 +1,22 @@
+{
+  "version": "1.2",
+  "dbname": "train.fasta",
+  "dbtype": "Protein",
+  "db-version": 5,
+  "description": "train.fasta",
+  "number-of-letters": 27037359,
+  "number-of-sequences": 77059,
+  "last-updated": "2024-02-22T11:14:00",
+  "number-of-volumes": 1,
+  "bytes-total": 34439680,
+  "bytes-to-cache": 27730987,
+  "files": [
+    "train.fasta.pdb",
+    "train.fasta.phr",
+    "train.fasta.pin",
+    "train.fasta.pot",
+    "train.fasta.psq",
+    "train.fasta.ptf",
+    "train.fasta.pto"
+  ]
+}

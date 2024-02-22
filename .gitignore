@@ -1,0 +1,15 @@
+*.csv
+*.tsv
+*.xlsx
+*.feather
+*.feather1
+*.h5
+*.txt
+*.fasta
+*.pdb
+*.phr
+*.pot
+*.ptf
+*.pin
+*.psq
+*.pto

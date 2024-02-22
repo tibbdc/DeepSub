@@ -32,6 +32,7 @@ def load_data(path=cfg.DATA_PATH):
     
     """  
     dataset = pd.read_csv(path)
+    # dataset.Sequence = dataset.Sequence.apply(lambda x :x[:10000])
     # dataset = dataset.sample(1000)
     dataset = dataset.rename(columns={'Entry':'uniprot_id','Sequence':'seq'})
     df_data = list(zip(dataset.uniprot_id.index,dataset.seq))
@@ -91,6 +92,7 @@ def get_rep_seq(sequences,model,batch_converter,alphabet):
         np_list.append(ten)
     res = pd.DataFrame(np_list)
     res.columns = ['f'+str(i) for i in range (0,res.shape[1])]
+    torch.cuda.empty_cache()
     return res
 
 def save_feature(folder_path_feature,res):
@@ -134,7 +136,7 @@ def main():
         os.makedirs(folder_path_feature)
     
     # Embedding
-    stride =2
+    stride = 2
     num_iterations = len(df_data) // stride
     if len(df_data) % stride != 0:
         num_iterations += 1

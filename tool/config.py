@@ -9,12 +9,12 @@ Description:  trainer parameter
 Copyright (c) 2024 by DengRui, All Rights Reserved. 
 '''
 
-DATA_PATH = './DATA/Dataset_0724.csv'
+DATA_PATH = './DATA/Dataset_0724_new.csv'
 FEATURE_PATH = './featurebank/'
 MODEL_SAVE_PATH = './model/'
 INPUT_SHAPE = (1, 1280)
 NUM_CLASSES = 10
-BATCH_SIZE = 1024
+BATCH_SIZE = 2048
 EPOCHS = 200
 TRAIN_TEST_SPLIT_SIZE = 0.2
 

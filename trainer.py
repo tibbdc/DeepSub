@@ -58,8 +58,9 @@ if __name__ =="__main__":
     # Load and preprocess the dataset.
     dataset = load_and_preprocess_data()
 
-    train_data, vali_data = train_test_split(dataset, test_size=cfg.TRAIN_TEST_SPLIT_SIZE,shuffle=False)
-
+    # train_data, vali_data = train_test_split(dataset, test_size=cfg.TRAIN_TEST_SPLIT_SIZE,shuffle=False)
+    train_data, vali_data = train_test_split(dataset, test_size=cfg.TRAIN_TEST_SPLIT_SIZE, stratify=dataset['label'], random_state=42)
+    
     X_train = reshape_features(train_data.iloc[:,3:])
     X_val = reshape_features(vali_data.iloc[:,3:])
     
@@ -85,4 +86,12 @@ if __name__ =="__main__":
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
         
-    gru_attention_model.save_model(f'{cfg.MODEL_SAVE_PATH}deepsub_new.h5')
+    gru_attention_model.save_model(f'{cfg.MODEL_SAVE_PATH}deepsub.h5')
+
+    val_predictions = gru_attention_model.model.predict(X_val, batch_size=cfg.BATCH_SIZE)
+    ground_truth_labels = vali_data['label'].values
+    predicted_labels = np.argmax(val_predictions, axis=1)
+    
+    # Export ground truth and predicted labels
+    export_data = pd.DataFrame({'GroundTruth': ground_truth_labels, 'PredictedLabels': predicted_labels})
+    export_data.to_csv('groundtruth_and_labels.csv', index=False)
