@@ -14,3 +14,6 @@
 *.psq
 *.pto
 *.pyc
+*.xml
+*.gz
+*uniprot_sprot_xml
