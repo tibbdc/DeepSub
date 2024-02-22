@@ -28,6 +28,7 @@ def download_uniprot_data(url, store_path):
     else:
         print("Failed to retrieve data. Status code:", response.status_code)
 
+
 def get_dataset_from_uniprot(uniprot_data, dataset_outfile):
     """
     Read Uniprot data from a CSV file, preprocess the data, and filter out entries based on specific keywords.
@@ -39,6 +40,7 @@ def get_dataset_from_uniprot(uniprot_data, dataset_outfile):
         dataset_outfile (str): Path to save the processed dataset as a new CSV file.
     """
    
+
     # Preprocessing steps
     print(f'all_data: {len(uniprot_data)}')
     # uniprot_data = uniprot_data.dropna(subset=['Subunit structure'])
@@ -174,7 +176,6 @@ def get_dataset_from_uniprot(uniprot_data, dataset_outfile):
     print(uniprot_data.shape)
 
 
-
 def get_dataset_distribution(dataset_outfile, subunit_num_distribution_png):
     """
     Generate a box plot to visualize the distribution of subunit numbers in the dataset.
@@ -221,6 +222,7 @@ def get_dataset_distribution(dataset_outfile, subunit_num_distribution_png):
     plt.tight_layout()
     plt.savefig(subunit_num_distribution_png, dpi=300, bbox_inches='tight')
     plt.show()
+
 
 def get_label_length_distribution(dataset_outfile, label_length_distribution_png): 
     """
@@ -269,17 +271,18 @@ def get_label_length_distribution(dataset_outfile, label_length_distribution_png
     plt.tight_layout()
     plt.savefig(label_length_distribution_png, dpi=300, bbox_inches='tight')
     plt.show()
-    
+
+
 def split_ECnumber(uniprot_EC_data):
     new_rows = []
 
     for index, row in uniprot_EC_data.iterrows():
-        ec_numbers = row['EC number'].split(';')  
+        ec_numbers = row['EC number'].split(';')  # 按分号分割EC号码
         
         for ec in ec_numbers:
-            new_row = row.copy() 
-            new_row['EC number'] = ec.strip() 
-            new_rows.append(new_row) 
+            new_row = row.copy()  # 复制原始行的内容
+            new_row['EC number'] = ec.strip()  # 更新EC号码列
+            new_rows.append(new_row)  # 将新行添加到列表中
 
     uniprot_EC_data_new = pd.DataFrame(new_rows)
 
@@ -317,53 +320,34 @@ def get_ec_subunit_num_ratio(dataset_outfile,entry_EC_file,ec_subunit_num_ratio_
     EC_label['length_set'] = EC_label['uniprot_label_set'].apply(lambda x:len(x))
 
     value_counts = EC_label['length_set'].value_counts()
-    
-    plt.figure(figsize=(8, 8))  
-    patches, texts = plt.pie(
-            value_counts.values,
-            labels=value_counts.index,
-            startangle=140,
-            colors=sns.color_palette(palette='Accent',desat=0.7),
-            explode=(0, 0.1, 0.1, 0.1, 0.2), 
-            labeldistance=1.2,
-            radius=0.9,
-            counterclock=False,
-            textprops={'color':'b',
-                    'fontsize':20,
-                        }
-            )
-
-    # 图例信息
-    legend_title = 'Type of Homomeric Oligmers'
-    legend_name = [1,2,3,4,5]
-
-    plt.legend(patches, legend_name,
-            title=legend_title,
-            loc="center left",
-            bbox_to_anchor=(1, 0, 0.5, 1),
-            ncol=2,
-            )
-
-    plt.title('Ration of Subunit Types for EC')
+    plt.bar(value_counts.index, value_counts.values)
+    # plt.xlabel('Types of Homomeric Oligomers')
+    plt.xlabel('Types of homomeric oligomers',fontsize=18)
+    # plt.ylabel('Count')
+    plt.ylabel('Number of protein species',fontsize=18)
+    # plt.title('Number of Subunit Types for EC')
+    plt.tight_layout()
     plt.savefig(ec_subunit_num_ratio_png,dpi =300,bbox_inches='tight')
+
     plt.show()
-    
 
-def plot_heatmap(heatmap_data, ec_subunit_num_heatmap_png):
-    plt.figure(dpi=120)
-    sns.heatmap(data=heatmap_data,               
-                cmap=plt.get_cmap('Greens'),
-                center=230,
-                linewidths=1,
-                
-                cbar=True,
-                cbar_kws={'label': 'EC count',
-                            'orientation': 'vertical',
-                            "ticks":np.arange(0,500,100),
-                            }
-                )
+def plot_heatmap(data, labels,ec_subunit_num_heatmap_png):
+    heatmap_data = np.zeros((len(data), len(labels)))
+    for i, row in data.iterrows():
+        for label in row['uniprot_label_set']:
+            heatmap_data[i][labels.index(label)] = 1
+    plt.figure(figsize=(8, 20))
+    # cmap = sns.color_palette(['#FFB6C1', '#87CEFA'])  # 两种颜色：蓝色和红色
+    # cmap = sns.color_palette(['whitesmoke', 'lightsalmon'])  # 两种颜色：蓝色和红色 
+    cmap = sns.color_palette(['whitesmoke', '#87CEFA'])  # 两种颜色：蓝色和红色     
 
-    plt.title('Subunit Number frequency Heatmap')
+    sns.heatmap(heatmap_data, cmap=cmap, xticklabels=labels, yticklabels=False)  # 禁用y轴标签
+
+    # plt.title('EC Number vs Label Heatmap')
+    # plt.xlabel('Labels')
+    plt.xlabel('Subunit number',fontsize=18)
+    # plt.ylabel('EC Number')
+    plt.ylabel('EC number',fontsize=18)
 
     plt.savefig(ec_subunit_num_heatmap_png,dpi =300,bbox_inches='tight')
     plt.show()
@@ -388,78 +372,24 @@ def get_ec_subunit_num_heatmap(dataset_outfile,entry_EC_file,ec_subunit_num_heat
     EC_label['length'] = EC_label['uniprot_label'].apply(lambda x:len(x))
     EC_label['uniprot_label_set'] = EC_label['uniprot_label'].apply(lambda x: list(set(x))).apply(sorted)
     EC_label['length_set'] = EC_label['uniprot_label_set'].apply(lambda x:len(x))
-    
+
     EC_label=EC_label[EC_label['length_set']>1]
+    EC_label=EC_label.sort_values('uniprot_label_set')
+
+    data =EC_label[['EC number','uniprot_label_set']]
+    data = data
+
+    data['EC_group'] = data['EC number'].apply(lambda x: x[0])
+
+    data_grouped = data.groupby('EC_group').apply(lambda x: x.sort_values('uniprot_label_set')).reset_index(drop=True)
+
+    data_grouped['label_tuple'] = data_grouped['uniprot_label_set'].apply(tuple)
+
+    labels = sorted(set(label for sublist in data_grouped['uniprot_label_set'] for label in sublist))
+
+    plot_heatmap(data_grouped, labels,ec_subunit_num_heatmap_png)
     
-    # 构建热图数据
-    labels_list = ['Monomer',
-    'Homodimer',
-    'Homotrimers',
-    'Homotetramer',
-    'Homopentamner',
-    'Homohexamer',
-    'Homoheptamer',
-    'Homooctamers',
-    'Homodecamer',
-    'Homododecamer']
-    label_dict = {}
-
-    for i in range(len(labels_list)):
-        label_dict[labels_list[i]] = i + 1
-    label_dict['Homodecamer'] = 10
-    label_dict['Homododecamer'] = 12
 
 
-    data = np.zeros((10, 10))  # 初始化一个全零的10x10数组
-    # for i,xlabel in enumerate(labels_list):
-    #     for j,ylabel in enumerate(labels_list):
-    #         pass
-    heatmap_data = pd.DataFrame(data, index=labels_list, columns=labels_list)
 
-    for index_name in labels_list:
-        for columns_name in labels_list:
-            value = 0
-            index, columns = label_dict[index_name], label_dict[columns_name]
-            value = EC_label[EC_label['uniprot_label_set'].apply(lambda x:index in x and columns in x)].shape[0]
-            heatmap_data.loc[index_name,columns_name] = value
 
-    plot_heatmap(heatmap_data,ec_subunit_num_heatmap_png)
-    
-def get_distribution_among_species(dataset_outfile,organsim_file,distribution_among_species_png):
-    uniprot_data = pd.read_csv(dataset_outfile,sep=',')
-    organsim_df = pd.read_csv(organsim_file,sep='\t')
-    subunit_with_organism_df = pd.merge(uniprot_data,organsim_df[['Entry','Organism']],how='left',on='Entry')
-    subunit_with_organism_df = subunit_with_organism_df[subunit_with_organism_df['Organism'].notna()]
-    
-    species_list = ['Homo sapiens','Mus musculus','Saccharomyces cerevisiae','Escherichia coli']
-    species_dict = {}
-    label_sequence = [1,2,3,4,5,6,7,8,10,12]
-    for species in species_list:
-        group_df = subunit_with_organism_df[subunit_with_organism_df['Organism'].str.contains(species)].groupby('label')
-        count_list = [0] * 10
-        for i,df in group_df:
-            index = label_sequence.index(i)
-            count_list[index] = df.shape[0]
-        species_dict[species] = count_list
-        
-    x_label = [1,2,3,4]
-    x = 0
-    fig, ax = plt.subplots()
-    for species in species_list:
-        x += 1
-        bottom = 0
-        y_list = [y/sum(species_dict[species]) for y in species_dict[species]]
-        print()
-        for i,y in enumerate(y_list):
-            plt.bar(x,y, width=0.6, bottom=bottom,color=sns.hls_palette(10,l=.7,s=.8)[i]
-                    )
-            bottom += y
-            
-    ax.set_ylabel('Ration')
-    ax.set_title('Distribution of ration by Label')
-    ax.set_xticks(x_label,)
-    ax.set_xticklabels(species_list,rotation = 30,fontsize = 'small')
-    ax.set_ylim(0,1.2)
-    
-    plt.savefig(distribution_among_species_png,dpi =300,bbox_inches='tight')
-    plt.show()
