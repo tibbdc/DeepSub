@@ -1,32 +1,179 @@
 #coding=utf-8
-import os
-import csv
-import requests
 import pandas as pd
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+from Bio import SeqIO
+from tqdm import tqdm
+from lxml import etree
+import pandas as pd
+import xml.etree.ElementTree as ET
+from pandarallel import pandarallel
+pandarallel.initialize()
 
-def download_uniprot_data(url, store_path):
+
+def analysis_xml_basic_data(xml_file):
     """
-    Download Uniprot data from the given URL and save it to a file.
-
+    Read the XML file and extract basic data from each entry.
+    
     Args:
-        url (str): The URL to fetch Uniprot data.
-        store_path (str): The path to store the downloaded data.
+        xml_file (str): Path to the XML file.
+        
+    Returns:
+        pd.DataFrame: A DataFrame containing the extracted basic data.   
+          
     """
-    response = requests.get(url)
+    records = []
+    
+    # Analyze the XML file throught the SEQIO module
+    for record in tqdm(SeqIO.parse(xml_file, "uniprot-xml")):
+        uniprot_id = record.id
+        seq = record.seq
+        sequence_length = 0
+        comment_subunit =''
+        
+        if 'sequence_length' in record.annotations:
+                sequence_length = record.annotations['sequence_length']
+        if 'organism' in record.annotations:
+                organism = record.annotations['organism']
 
-    if response.status_code == 200:
-        data = response.content.decode('utf-8')
-        lines = data.split('\n')
-        with open(store_path, 'w', newline='') as file:
-            writer = csv.writer(file, delimiter='\t')
-            for line in lines:
-                writer.writerow(line.split('\t'))
-        print("Data saved to", store_path)
+        records.append({
+            'uniprot_id': uniprot_id,
+            'seq': str(seq),
+            'seq_len': sequence_length,
+            'organism': organism
+        })
+        
+    return pd.DataFrame(records)
+
+def get_subunit_infomation_lxml(xml_file):
+    """
+    Read the XML file and extract basic data from each entry.
+    
+    Args:
+        xml_file (str): Path to the XML file.
+        store_path (str): Path to save the extracted data as a CSV file.
+        namespaces (dict): Namespace dictionary.
+        
+    Returns:
+        pd.DataFrame: A DataFrame containing the extracted analysis data.    
+         
+    """
+    namespaces = {'ns0': 'http://uniprot.org/uniprot'}
+    parsed_data = []
+    context = etree.iterparse(xml_file, events=('end',), tag='{http://uniprot.org/uniprot}entry')
+    for event, entry in tqdm(context):
+        accession_element = entry.find('ns0:accession', namespaces)
+        accession_text = accession_element.text if accession_element is not None else None
+        evidence_type = []
+        evidence_key = []
+        evidence_elements = entry.findall('ns0:evidence', namespaces)
+        
+        # Analysis evidence_elements
+        for evidence_element in evidence_elements:
+            evidencetype = evidence_element.get('type')
+            evidencekey = evidence_element.get('key')
+            evidence_type.append(evidencetype)
+            evidence_key.append(evidencekey)
+        
+        # Analysis subunit_elements
+        subunit_evidence = []
+        subunit_text = []
+        for comment in entry.findall("ns0:comment[@type='subunit']", namespaces):
+            text_element = comment.find('ns0:text', namespaces)
+            if text_element is not None:
+                text_content = text_element.text
+                evidence = text_element.get('evidence')
+                if evidence is not None:
+                    subunit_evidence = [int(num) for num in evidence.split()]
+                else:
+                    subunit_evidence = []
+                subunit_text.append(text_content)
+        
+        # Analysis ec_number       
+        ec_numbers = [ec.text for ec in entry.findall('.//ns0:protein//ns0:ecNumber', namespaces)]
+        
+        # Save the data
+        parsed_data.append({'uniprot_id': accession_text, 'evidence_type': evidence_type,'evidence_key':evidence_key, 'subunit_evidence': subunit_evidence,'subunit_text':subunit_text,'ec_number':ec_numbers})
+        
+        # Clear the entry
+        entry.clear()
+        
+    return pd.DataFrame(parsed_data)
+
+def map_evidence(df_row):
+    """
+        map the evidence_type and evidence_key to the subunit_evidence
+        
+        Args:
+            df_row (pd.Series): A row of the DataFrame containing the extracted analysis data.
+            
+        Returns:
+            pd.Series: A Series containing the mapped evidence type and key to the subunit_evidence.
+            
+    """
+    key_to_type = {key: ev_type for key, ev_type in zip(df_row['evidence_key'], df_row['evidence_type'])}
+    return [key_to_type.get(str(key)) for key in df_row['subunit_evidence']]
+
+def preprocessing_data(df_basic_data,df_subunit_data):
+    """
+        preprocessing the data
+        
+        Args:
+            res (pd.DataFrame): A DataFrame containing the extracted analysis data.
+            
+        Returns:
+            pd.DataFrame: A DataFrame containing the preprocessed data.
+            
+    """
+    df_subunit_data['mapped_evidence_types'] = df_subunit_data.parallel_apply(map_evidence, axis=1)
+
+    # Concat the data
+    res = pd.concat([df_basic_data[['uniprot_id','seq','seq_len','organism']],df_subunit_data[['ec_number','evidence_type','evidence_key','subunit_evidence','subunit_text','mapped_evidence_types']]],axis=1)
+    res = res.rename(columns={
+        'uniprot_id': 'Entry',
+        'subunit_text': 'Subunit structure',
+        'seq_len':'Length',
+        'seq':'Sequence',
+        'ec_number':'EC number'
+    })
+    
+    # Change the type of data
+    for col in ['Subunit structure','EC number','mapped_evidence_types']:
+        if res[col].apply(lambda x: isinstance(x, list)).any():
+            res[col] = res[col].apply(lambda x: ','.join(map(str, x)) if isinstance(x, list) else x)
+            
+    return res
+
+
+def analysis_uniprot_xml(xml_file, store_path):
+    """
+        Analysis the uniprot xml file
+        
+        Args:
+            xml_file (str): Path to the XML file containing Uniprot data.
+            store_path (str): Path to save the processed data as a feather file.
+        Returns:
+        None
+    """
+    # Anlysis data
+    res = pd.DataFrame()
+    
+    if not os.path.exists(xml_file):
+        print(f'Downloading {xml_file}...')
+        
     else:
-        print("Failed to retrieve data. Status code:", response.status_code)
+        # Analysis from xml
+        df_basic_data   = analysis_xml_basic_data(xml_file)
+        df_subunit_data = get_subunit_infomation_lxml(xml_file)
+        res = preprocessing_data(df_basic_data, df_subunit_data)
+        
+        # Save uniprot_sprot_data.feather
+        res.to_feather(store_path)
+        
+    return res
+        
 
 def get_dataset_from_uniprot(uniprot_data, dataset_outfile):
     """
