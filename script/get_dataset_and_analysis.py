@@ -187,7 +187,7 @@ def get_dataset_from_uniprot(uniprot_data, dataset_outfile):
     """
    
     # Preprocessing steps
-    print(f'all_data: {len(uniprot_data)}')
+    print(f'All data: {len(uniprot_data)}')
     # uniprot_data = uniprot_data.dropna(subset=['Subunit structure'])
     uniprot_data = uniprot_data[uniprot_data['Subunit structure'] != ''] 
     print(f'Filtered out empty data: {len(uniprot_data)}')
@@ -198,7 +198,7 @@ def get_dataset_from_uniprot(uniprot_data, dataset_outfile):
 
     mask = uniprot_data['mapped_evidence_types'].str.contains('ECO:0000250') & ~uniprot_data['Subunit structure'].str.contains('PubMed:')
     uniprot_data = uniprot_data[~mask]
-    print(f'Removed ECO:0000250 without PubMed reference: {len(uniprot_data)}')
+    print(f'Removed ECO:0000250: {len(uniprot_data)}')
 
     uniprot_data = uniprot_data[uniprot_data['Subunit structure'].str.contains('Monomer|monomer|Homodimer|homodimer|Homotrimer|homotrimer|Homotetramer|homotetramer|Homopentamer|homopentamer|Homohexamer|homohexamer|Homoheptamer|homoheptamer|Homooctamer|homooctamer|Homodecamer|homodecamer|Homododecamer|homododecamer')]
     print(f'Extracting 10 subunit labels: {len(uniprot_data)}')
