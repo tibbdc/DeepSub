@@ -94,4 +94,4 @@ if __name__ =="__main__":
     
     # Export ground truth and predicted labels
     export_data = pd.DataFrame({'GroundTruth': ground_truth_labels, 'PredictedLabels': predicted_labels})
-    export_data.to_csv('groundtruth_and_labels.csv', index=False)
+    export_data.to_csv('output/groundtruth_and_labels.csv', index=False)
