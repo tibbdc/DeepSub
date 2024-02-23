@@ -313,7 +313,7 @@ def get_dataset_from_uniprot(uniprot_data, dataset_outfile):
     print(f'Extracted data containing keywords: {len(uniprot_data)}')
 
     # Select required columns and save to the dataset_outfile
-    uniprot_data = uniprot_data[['Entry', 'Sequence', 'label']]
+    uniprot_data = uniprot_data[['Entry', 'Sequence', 'label','organism','EC number']]
     uniprot_data.reset_index(drop=True)
     uniprot_data.to_csv(dataset_outfile, index=None)
   
@@ -322,7 +322,7 @@ def get_dataset_from_uniprot(uniprot_data, dataset_outfile):
 
 
 
-def get_dataset_distribution(dataset_outfile, subunit_num_distribution_png):
+def get_dataset_distribution(orig_data, subunit_num_distribution_png):
     """
     Generate a box plot to visualize the distribution of subunit numbers in the dataset.
 
@@ -330,7 +330,7 @@ def get_dataset_distribution(dataset_outfile, subunit_num_distribution_png):
         dataset_outfile (str): The path of the dataset CSV file containing processed Uniprot data.
         subunit_num_distribution_png (str): The path where the generated box plot PNG file will be saved.
     """
-    uniprot_data = pd.read_csv(dataset_outfile)
+    uniprot_data = orig_data.copy()
     uniprot_data['label'] = uniprot_data['label'].apply(lambda x: int(x))
     
     x = ['1', '2', '3', '4', '5', '6', '7', '8', '10', '12']
@@ -369,7 +369,7 @@ def get_dataset_distribution(dataset_outfile, subunit_num_distribution_png):
     plt.savefig(subunit_num_distribution_png, dpi=300, bbox_inches='tight')
     plt.show()
 
-def get_label_length_distribution(dataset_outfile, label_length_distribution_png): 
+def get_label_length_distribution(orig_data, label_length_distribution_png): 
     """
     Generate a box plot to visualize the distribution of sequence lengths and subunit number*sequence lengths in the dataset.
 
@@ -377,7 +377,7 @@ def get_label_length_distribution(dataset_outfile, label_length_distribution_png
         dataset_outfile (str): The path of the dataset CSV file containing processed Uniprot data.
         label_length_distribution_png (str): The path where the generated box plot PNG file will be saved.
     """
-    uniprot_data = pd.read_csv(dataset_outfile)
+    uniprot_data = orig_data.copy()
     uniprot_data['length'] = uniprot_data['Sequence'].apply(lambda x: len(x))
     uniprot_data['subunit number*length'] = uniprot_data.apply(lambda row: row['label'] * row['length'], axis=1)
     uniprot_data = uniprot_data[['Entry','label','length','subunit number*length']]
@@ -421,7 +421,7 @@ def split_ECnumber(uniprot_EC_data):
     new_rows = []
 
     for index, row in uniprot_EC_data.iterrows():
-        ec_numbers = row['EC number'].split(';')  
+        ec_numbers = row['EC number'].split(',')  
         
         for ec in ec_numbers:
             new_row = row.copy() 
@@ -443,15 +443,13 @@ def get_subunit_num_kinds_by_EC(uniprot_data):
 
     return(EC_label)
 
-def get_ec_subunit_num_ratio(dataset_outfile,entry_EC_file,ec_subunit_num_ratio_png):
-    uniprot_EC_data = pd.read_csv(entry_EC_file,sep='\t')
-    uniprot_EC_data = uniprot_EC_data[['Entry','EC number']]
-    uniprot_EC_data = uniprot_EC_data[uniprot_EC_data['EC number'].notna()]
+def get_ec_subunit_num_ratio(ori_data,ec_subunit_num_ratio_png):
+    uniprot_EC_data = ori_data[['Entry','EC number']]
+    uniprot_EC_data = uniprot_EC_data[uniprot_EC_data['EC number']!='']
     uniprot_EC_data_new = split_ECnumber(uniprot_EC_data)
     uniprot_EC_data_new = uniprot_EC_data_new[~uniprot_EC_data_new['EC number'].str.contains('-')]
 
-    uniprot_data = pd.read_csv(dataset_outfile)
-    uniprot_data = uniprot_data[['Entry','label']]
+    uniprot_data = ori_data[['Entry','label']]
     uniprot_data.rename(columns={'label': 'uniprot_label'}, inplace=True)
 
     uniprot_data = pd.merge(uniprot_data,uniprot_EC_data_new,how='left')
@@ -516,15 +514,14 @@ def plot_heatmap(heatmap_data, ec_subunit_num_heatmap_png):
     plt.show()
 
 
-def get_ec_subunit_num_heatmap(dataset_outfile,entry_EC_file,ec_subunit_num_heatmap_png):
-    uniprot_EC_data = pd.read_csv(entry_EC_file,sep='\t')
+def get_ec_subunit_num_heatmap(ori_data,ec_subunit_num_heatmap_png):
+    uniprot_EC_data = ori_data.copy()
     uniprot_EC_data = uniprot_EC_data[['Entry','EC number']]
-    uniprot_EC_data = uniprot_EC_data[uniprot_EC_data['EC number'].notna()]
+    uniprot_EC_data = uniprot_EC_data[uniprot_EC_data['EC number']!='']
     uniprot_EC_data_new = split_ECnumber(uniprot_EC_data)
     uniprot_EC_data_new = uniprot_EC_data_new[~uniprot_EC_data_new['EC number'].str.contains('-')]
 
-    uniprot_data = pd.read_csv(dataset_outfile)
-    uniprot_data = uniprot_data[['Entry','label']]
+    uniprot_data = ori_data[['Entry','label']]
     uniprot_data.rename(columns={'label': 'uniprot_label'}, inplace=True)
 
     uniprot_data = pd.merge(uniprot_data,uniprot_EC_data_new,how='left')
@@ -572,17 +569,17 @@ def get_ec_subunit_num_heatmap(dataset_outfile,entry_EC_file,ec_subunit_num_heat
 
     plot_heatmap(heatmap_data,ec_subunit_num_heatmap_png)
     
-def get_distribution_among_species(dataset_outfile,organsim_file,distribution_among_species_png):
-    uniprot_data = pd.read_csv(dataset_outfile,sep=',')
-    organsim_df = pd.read_csv(organsim_file,sep='\t')
-    subunit_with_organism_df = pd.merge(uniprot_data,organsim_df[['Entry','Organism']],how='left',on='Entry')
-    subunit_with_organism_df = subunit_with_organism_df[subunit_with_organism_df['Organism'].notna()]
+def get_distribution_among_species(ori_data,distribution_among_species_png):
+    # uniprot_data = pd.read_csv(dataset_outfile,sep=',')
+    # organsim_df = pd.read_csv(organsim_file,sep='\t')
+    # subunit_with_organism_df = pd.merge(uniprot_data,organsim_df[['Entry','Organism']],how='left',on='Entry')
+    uniprot_data = ori_data[ori_data['organism'].notna()]
     
     species_list = ['Homo sapiens','Mus musculus','Saccharomyces cerevisiae','Escherichia coli']
     species_dict = {}
     label_sequence = [1,2,3,4,5,6,7,8,10,12]
     for species in species_list:
-        group_df = subunit_with_organism_df[subunit_with_organism_df['Organism'].str.contains(species)].groupby('label')
+        group_df = uniprot_data[uniprot_data['organism'].str.contains(species)].groupby('label')
         count_list = [0] * 10
         for i,df in group_df:
             index = label_sequence.index(i)
