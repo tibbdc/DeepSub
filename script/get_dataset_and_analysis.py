@@ -316,9 +316,10 @@ def get_dataset_from_uniprot(uniprot_data, dataset_outfile):
     uniprot_data = uniprot_data[['Entry', 'Sequence', 'label','organism','EC number']]
     uniprot_data.reset_index(drop=True)
     uniprot_data.to_csv(dataset_outfile, index=None)
-  
+    
     print('Done')
     print(uniprot_data.shape)
+    return uniprot_data
 
 
 
@@ -446,6 +447,8 @@ def get_subunit_num_kinds_by_EC(uniprot_data):
 def get_ec_subunit_num_ratio(ori_data,ec_subunit_num_ratio_png):
     uniprot_EC_data = ori_data[['Entry','EC number']]
     uniprot_EC_data = uniprot_EC_data[uniprot_EC_data['EC number']!='']
+    uniprot_EC_data = uniprot_EC_data[uniprot_EC_data['EC number'].notna()]
+    
     uniprot_EC_data_new = split_ECnumber(uniprot_EC_data)
     uniprot_EC_data_new = uniprot_EC_data_new[~uniprot_EC_data_new['EC number'].str.contains('-')]
 
@@ -463,39 +466,42 @@ def get_ec_subunit_num_ratio(ori_data,ec_subunit_num_ratio_png):
 
     value_counts = EC_label['length_set'].value_counts()
     
-    plt.figure(figsize=(8, 8))  
+    plt.figure(figsize=(6, 6))  
     patches, texts = plt.pie(
             value_counts.values,
-            labels=value_counts.index,
+            labels=[ str(round(x/sum(value_counts.values)*100,2))+"%" for x in value_counts.values],
             startangle=140,
             colors=sns.color_palette(palette='Accent',desat=0.7),
-            explode=(0, 0.1, 0.1, 0.1, 0.2), 
+            explode=(0, 0.1, 0.2, 0.3, 0.5), 
             labeldistance=1.2,
             radius=0.9,
             counterclock=False,
-            textprops={'color':'b',
-                    'fontsize':20,
+            textprops={'color':'black',
+                    'fontsize':15,
                         }
             )
 
+
     # 图例信息
-    legend_title = 'Type of Homomeric Oligmers'
+    legend_title = 'Homomeric Oligmers'
     legend_name = [1,2,3,4,5]
 
     plt.legend(patches, legend_name,
             title=legend_title,
             loc="center left",
-            bbox_to_anchor=(1, 0, 0.5, 1),
-            ncol=2,
+            bbox_to_anchor=(0.9, 0.8),
+            # ncol=3,
+            fontsize=10
             )
 
-    plt.title('Ration of Subunit Types for EC')
+    plt.title('Ration of Subunit Types for EC',size=20)
     plt.savefig(ec_subunit_num_ratio_png,dpi =300,bbox_inches='tight')
     plt.show()
     
 
 def plot_heatmap(heatmap_data, ec_subunit_num_heatmap_png):
     plt.figure(dpi=120)
+    np.fill_diagonal(heatmap_data.values, 0)
     sns.heatmap(data=heatmap_data,               
                 cmap=plt.get_cmap('Greens'),
                 center=230,
@@ -518,6 +524,8 @@ def get_ec_subunit_num_heatmap(ori_data,ec_subunit_num_heatmap_png):
     uniprot_EC_data = ori_data.copy()
     uniprot_EC_data = uniprot_EC_data[['Entry','EC number']]
     uniprot_EC_data = uniprot_EC_data[uniprot_EC_data['EC number']!='']
+    uniprot_EC_data = uniprot_EC_data[uniprot_EC_data['EC number'].notna()]
+
     uniprot_EC_data_new = split_ECnumber(uniprot_EC_data)
     uniprot_EC_data_new = uniprot_EC_data_new[~uniprot_EC_data_new['EC number'].str.contains('-')]
 
@@ -574,7 +582,7 @@ def get_distribution_among_species(ori_data,distribution_among_species_png):
     # organsim_df = pd.read_csv(organsim_file,sep='\t')
     # subunit_with_organism_df = pd.merge(uniprot_data,organsim_df[['Entry','Organism']],how='left',on='Entry')
     uniprot_data = ori_data[ori_data['organism'].notna()]
-    
+
     species_list = ['Homo sapiens','Mus musculus','Saccharomyces cerevisiae','Escherichia coli']
     species_dict = {}
     label_sequence = [1,2,3,4,5,6,7,8,10,12]
