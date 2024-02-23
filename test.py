@@ -1,12 +1,3 @@
-'''
-Author: DengRui
-Date: 2024-01-10 13:15:08
-LastEditors: DengRui
-LastEditTime: 2024-01-20 13:23:06
-FilePath: /DeepSub/trainer.py
-Description:  trainer
-Copyright (c) 2024 by DengRui, All Rights Reserved. 
-'''
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
