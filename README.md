@@ -12,7 +12,7 @@ $ git clone  https://github.com/tibbdc/DeepSub.git
 $ cd DeepSub 
 ```
 ``` shell
-$ conda create -n deepsub python=3.7 
+$ conda create -n deepsub python=3.9 
 ```
 ``` shell
 $ conda activate deepsub 
@@ -21,14 +21,34 @@ $ conda activate deepsub
 $ pip install -r requirements.txt
 ```
 
-## Usage
+## Notebooks
 
-+  01.ipynb    load data 
-+  02.ipynb  anlysis data 
-+  03.ipynb  anlysis data 
-+  python featurizer.py 
-+  python trainer.py 
-+  test.ipynb
+1. **01_GetData.ipynb**
+   - Obtaining and processing data sets .
+
+2. **02_SeqIdentity.ipynb**
+   - Sequence Identity Comparison Result.
+
+3. **03_Blastp.ipynb**
+   - Results of blast comparison.
+
+4. **04_DeepSub.ipynb**
+   - DeepSub model and cross-validation results.
+
+5. **05_ML.ipynb**
+   - Machine learning model baseline.
+
+6. **06_Queen.ipynb**
+   - Queen model for model comparison.
+
+## Scripts
+
+- **featurizer.py**
+  - Sequence features are extracted before model training.
+
+- **trainer.py**
+  - Single training function.
+
 
 ## Notice
    
