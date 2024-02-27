@@ -172,7 +172,7 @@ def evaluate(baslineName, X_train_std, Y_train, X_test_std, Y_test, type='binary
     
     # joblib.dump(model, '../model/baseline_model/'+baslineName+'.pkl')
 
-    return predict
+    return predict, model
     
 def run_baseline(X_train, Y_train, X_test, Y_test, type='binary',method='knn'):
 

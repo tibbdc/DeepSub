@@ -18,3 +18,4 @@
 *.gz
 *uniprot_sprot_xml
 *BUCKUP
+*.pkl
