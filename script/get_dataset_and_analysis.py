@@ -11,8 +11,8 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 from pandarallel import pandarallel
 pandarallel.initialize()
-
-
+plt.rcParams['font.family'] = 'Times New Roman'
+plt.rcParams['font.weight'] = 'bold'
 def analysis_xml_basic_data(xml_file):
     """
     Read the XML file and extract basic data from each entry.
@@ -340,8 +340,7 @@ def get_dataset_distribution(orig_data, subunit_num_distribution_png):
     for i in x:
         subunit_data.append(uniprot_data[uniprot_data['label'] == int(i)]['label'].tolist())
 
-    plt.figure(figsize=(10, 8), dpi=300)
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(8, 6))
     positions = np.arange(len(x))
 
     # Create the box plot
@@ -355,18 +354,19 @@ def get_dataset_distribution(orig_data, subunit_num_distribution_png):
 
     # Add value annotations on top of each bar
     for i, value in enumerate([len(subunit) for subunit in subunit_data]):
-        ax.text(i, value + 0.1, str(value), ha='center', va='bottom', fontsize=10)
+        ax.text(i, value + 0.1, str(value), ha='center', va='bottom', fontsize=11)
 
     ax.set_xticks(positions)
+    ax.tick_params(axis='both', which='both', labelsize=13)
     ax.set_xticklabels(x)
     ax.set_xlabel('Subunit number', fontsize=18)
-    ax.set_ylabel('Number of protein sequences', fontsize=18)
+    ax.set_ylabel('Number of Protein Sequences', fontsize=18)
 
     # Set a custom y-axis limit greater than the maximum value in the bar plot
     custom_y_limit = max(map(len, subunit_data)) + 5000
     ax.set_ylim(0, custom_y_limit)
 
-    plt.tight_layout()
+    # plt.tight_layout()
     plt.savefig(subunit_num_distribution_png, dpi=300, bbox_inches='tight')
     plt.show()
 
@@ -391,7 +391,7 @@ def get_label_length_distribution(orig_data, label_length_distribution_png):
 
     label_length_data = [[l * length for length in lengths] for l, lengths in zip(label, length_data)]
     
-    plt.figure(figsize=(10, 8), dpi=300) 
+    plt.figure(figsize=(8, 6), dpi=300) 
     fig, ax = plt.subplots()
     positions = np.arange(len(label))
 
@@ -406,12 +406,13 @@ def get_label_length_distribution(orig_data, label_length_distribution_png):
         box.set(color='green', linewidth=1.5)
         box.set(facecolor=colors[1])
 
-    ax.legend([length_box['boxes'][0], label_length_box['boxes'][0]], ['length', 'subunit number*length'])
+    ax.legend([length_box['boxes'][0], label_length_box['boxes'][0]], ['length', 'subunit number*length'], fontsize=16)
 
     ax.set_xticks(positions)
     ax.set_xticklabels(label)
-    ax.set_xlabel('Subunit number', fontsize=18)
-    ax.set_ylabel('Number of amino acids', fontsize=18)
+    ax.set_xlabel('Subunit number', fontsize=20)
+    ax.set_ylabel('Number of amino acids', fontsize=20)
+    ax.tick_params(axis='both', which='both', labelsize=14)
     ax.set_ylim(0, 7000)
 
     plt.tight_layout()
@@ -465,8 +466,8 @@ def get_ec_subunit_num_ratio(ori_data,ec_subunit_num_ratio_png):
     EC_label['length_set'] = EC_label['uniprot_label_set'].apply(lambda x:len(x))
 
     value_counts = EC_label['length_set'].value_counts()
-    
-    plt.figure(figsize=(6, 6))  
+    EC_label.to_excel("2.xlsx", index=False)
+    plt.figure(figsize=(8, 6))  
     patches, texts = plt.pie(
             value_counts.values,
             labels=[ str(round(x/sum(value_counts.values)*100,2))+"%" for x in value_counts.values],
@@ -483,24 +484,25 @@ def get_ec_subunit_num_ratio(ori_data,ec_subunit_num_ratio_png):
 
 
     # 图例信息
-    legend_title = 'Homomeric Oligmers'
+    legend_title = 'The number of different subunit structures'
     legend_name = [1,2,3,4,5]
 
     plt.legend(patches, legend_name,
             title=legend_title,
+            title_fontsize=16,
             loc="center left",
-            bbox_to_anchor=(0.9, 0.8),
-            # ncol=3,
-            fontsize=10
+            bbox_to_anchor=(0, 1),
+            ncol=5,
+            fontsize=12
             )
 
-    plt.title('Ration of Subunit Types for EC',size=20)
+    # plt.title('Ration of Subunit Types for EC',size=20)
     plt.savefig(ec_subunit_num_ratio_png,dpi =300,bbox_inches='tight')
     plt.show()
     
 
 def plot_heatmap(heatmap_data, ec_subunit_num_heatmap_png):
-    plt.figure(dpi=120)
+    plt.figure(figsize=(8, 6))
     np.fill_diagonal(heatmap_data.values, 0)
     sns.heatmap(data=heatmap_data,               
                 cmap=plt.get_cmap('Greens'),
@@ -514,8 +516,10 @@ def plot_heatmap(heatmap_data, ec_subunit_num_heatmap_png):
                             }
                 )
 
-    plt.title('Subunit Number frequency Heatmap')
-
+    # plt.title('Subunit Number frequency Heatmap',size =20)
+    plt.yticks(size = 16)
+    
+    plt.gca().tick_params(axis='both', which='both', labelsize=14)
     plt.savefig(ec_subunit_num_heatmap_png,dpi =300,bbox_inches='tight')
     plt.show()
 
@@ -574,44 +578,53 @@ def get_ec_subunit_num_heatmap(ori_data,ec_subunit_num_heatmap_png):
             index, columns = label_dict[index_name], label_dict[columns_name]
             value = EC_label[EC_label['uniprot_label_set'].apply(lambda x:index in x and columns in x)].shape[0]
             heatmap_data.loc[index_name,columns_name] = value
-
+    heatmap_data.to_excel("1.xlsx",index=False)
     plot_heatmap(heatmap_data,ec_subunit_num_heatmap_png)
     
-def get_distribution_among_species(ori_data,distribution_among_species_png):
+def get_distribution_among_species(ori_data, distribution_among_species_png):
     # uniprot_data = pd.read_csv(dataset_outfile,sep=',')
     # organsim_df = pd.read_csv(organsim_file,sep='\t')
     # subunit_with_organism_df = pd.merge(uniprot_data,organsim_df[['Entry','Organism']],how='left',on='Entry')
     uniprot_data = ori_data[ori_data['organism'].notna()]
 
-    species_list = ['Homo sapiens','Mus musculus','Saccharomyces cerevisiae','Escherichia coli']
+    species_list = ['Homo sapiens', 'Mus musculus', 'Saccharomyces cerevisiae', 'Escherichia coli']
     species_dict = {}
-    label_sequence = [1,2,3,4,5,6,7,8,10,12]
+    label_sequence = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12]
+    color_palette = sns.hls_palette(10, l=.7, s=.8)
+    legend_labels = ['Monomer', 'Homodimer', 'Homotrimers', 'Homotetramer', 'Homopentamner', 'Homohexamer', 'Homoheptamer', 'Homooctamers', 'Homodecamer', 'Homododecamer']
+    legend_colors = color_palette[:len(label_sequence)]  # Select colors for legend based on label sequence
+    
     for species in species_list:
         group_df = uniprot_data[uniprot_data['organism'].str.contains(species)].groupby('label')
         count_list = [0] * 10
-        for i,df in group_df:
+        for i, df in group_df:
             index = label_sequence.index(i)
             count_list[index] = df.shape[0]
         species_dict[species] = count_list
-        
-    x_label = [1,2,3,4]
+
+    x_label = [1, 2, 3, 4]
     x = 0
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(8, 6))
+    handles = []  # Collect legend handles
+    
     for species in species_list:
         x += 1
         bottom = 0
-        y_list = [y/sum(species_dict[species]) for y in species_dict[species]]
-        print()
-        for i,y in enumerate(y_list):
-            plt.bar(x,y, width=0.6, bottom=bottom,color=sns.hls_palette(10,l=.7,s=.8)[i]
-                    )
+        y_list = [y / sum(species_dict[species]) for y in species_dict[species]]
+        for i, y in enumerate(y_list):
+            bar = plt.bar(x, y, width=0.6, bottom=bottom, color=color_palette[i])
             bottom += y
-            
-    ax.set_ylabel('Ration')
-    ax.set_title('Distribution of ration by Label')
-    ax.set_xticks(x_label,)
-    ax.set_xticklabels(species_list,rotation = 30,fontsize = 'small')
-    ax.set_ylim(0,1.2)
-    
-    plt.savefig(distribution_among_species_png,dpi =300,bbox_inches='tight')
+            handles.append(bar)  # Append each bar to legend handles
+
+    ax.set_ylabel('Ratio', fontsize=16)
+    # ax.set_title('Distribution of ratio by Label', fontsize=18)
+    ax.set_xticks(x_label)
+    ax.tick_params(axis='both', which='both', labelsize=14)
+    ax.set_xticklabels(species_list, rotation=30, fontsize=14)
+    ax.set_ylim(0, 1.2)
+
+    # Add legend
+    plt.legend(handles, legend_labels, loc='center left', bbox_to_anchor=(1, 0.5), title='Subunit', fontsize=12, title_fontsize=16)
+
+    plt.savefig(distribution_among_species_png, dpi=300, bbox_inches='tight')
     plt.show()

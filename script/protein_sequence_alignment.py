@@ -76,7 +76,7 @@ def plot_and_save_histogram_diff_label(result1, histogram_diff_label_file):
     plt.show()
     
 
-def analyze_uniprot_data(uniprot_file, Swiss_Prot_Entry_EC_file):
+def analyze_uniprot_data(uniprotdata):
     """
     Function to analyze Uniprot data.
 
@@ -89,13 +89,12 @@ def analyze_uniprot_data(uniprot_file, Swiss_Prot_Entry_EC_file):
     """
 
     # Read Uniprot data
-    uniprot_data = pd.read_csv(uniprot_file)
-    uniprot_data = uniprot_data[['Entry', 'label']]
+    uniprot_data = uniprotdata[['Entry', 'label']]
     uniprot_data.rename(columns={'label': 'uniprot_label'}, inplace=True)
     print('Loaded Uniprot data shape:', uniprot_data.shape)
 
     # Read Uniprot EC data
-    uniprot_EC_data = pd.read_csv(Swiss_Prot_Entry_EC_file, sep='\t')
+    uniprot_EC_data = uniprotdata.copy()
     uniprot_EC_data = uniprot_EC_data[['Entry', 'EC number']]
 
     # Filter out rows with NaN values in EC number column
@@ -126,7 +125,7 @@ def analyze_uniprot_data(uniprot_file, Swiss_Prot_Entry_EC_file):
     return EC_label_greater_than_2
 
 
-def create_protein_pairs_with_sequences(EC_label_greater_than_2, uniprot_file):
+def create_protein_pairs_with_sequences(EC_label_greater_than_2, uniprotdata):
     """
     Create pairs of proteins with sequences for further analysis.
 
@@ -171,7 +170,7 @@ def create_protein_pairs_with_sequences(EC_label_greater_than_2, uniprot_file):
         result = pd.concat([result, pd.DataFrame(new_rows)], ignore_index=True)
         
     # Add protein sequences
-    uniprot_data = pd.read_csv(uniprot_file, usecols=['Entry', 'Sequence'])
+    uniprot_data = uniprotdata[['Entry', 'Sequence']]#pd.read_csv(uniprot_file, usecols=['Entry', 'Sequence'])
 
     result1 = result.merge(uniprot_data, left_on='entry1', right_on='Entry', how='left')
     result1.rename(columns={'Sequence': 'seq1'}, inplace=True)

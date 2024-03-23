@@ -12,36 +12,10 @@ import requests
 import logging
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-data = pd.read_csv("./DATA/complexPortal_num(1).tsv",sep='\t')
-os.environ['HTTP_PROXY'] = 'http://127.0.0.1:7890'
 # Set gpu
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-def get_fasta_data(ids):
-    data_list = []
-    
-    for ID in ids:
-        url = f"https://rest.uniprot.org/uniprotkb/{ID}.fasta"
-        response = requests.get(url)
-        
-        if response.status_code == 200:
-            fasta_data = response.text
-        else:
-            fasta_data = f"Failed to download data for ID {ID}. Status code: {response.status_code}"
-        
-        header, *sequence_lines = fasta_data.split('\n')
-        uniprot_id = header.split('|')[1]
-        sequence = ''.join(sequence_lines)
-        
-        data_list.append({'uniprot_id': uniprot_id, 'seq': sequence})
-    
-    dataset = pd.DataFrame(data_list)
-    return dataset
-
-# Example usage:
-ID_list = data.entry.tolist()
-dataset = get_fasta_data(ID_list)
-dataset.to_csv("output/download_seq.csv",index=False)
+dataset = pd.read_csv("output/download_seq.csv")
 
 model, alphabet = esm.pretrained.esm2_t33_650M_UR50D()
 batch_converter = alphabet.get_batch_converter()
