@@ -29,17 +29,14 @@ $ pip install -r requirements.txt
 2. **02_SeqIdentity.ipynb**
    - Sequence Identity Comparison Result.
 
-3. **03_Blastp.ipynb**
-   - Results of blast comparison.
-
-4. **04_DeepSub.ipynb**
+3. **03_DeepSub.ipynb**
    - DeepSub model and cross-validation results.
 
-5. **05_ML.ipynb**
-   - Machine learning model baseline.
-
-6. **06_Queen.ipynb**
+5. **04_Queen.ipynb**
    - Queen model for model comparison.
+
+6. **05_OpenSet.ipynb**
+   - OpenSet Dataset Evaluation.
 
 ## Scripts
 
