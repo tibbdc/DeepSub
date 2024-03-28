@@ -189,20 +189,16 @@ def create_protein_pairs_with_sequences(EC_label_greater_than_2, uniprotdata):
 def split_ECnumber(uniprot_EC_data):
     new_rows = []
 
-    # 遍历每一行
     for index, row in uniprot_EC_data.iterrows():
-        ec_numbers = row['EC number'].split(';')  # 按分号分割EC号码
+        ec_numbers = row['EC number'].split(';')  
         
-        # 对于每个EC号码创建一个新的行
         for ec in ec_numbers:
-            new_row = row.copy()  # 复制原始行的内容
-            new_row['EC number'] = ec.strip()  # 更新EC号码列
-            new_rows.append(new_row)  # 将新行添加到列表中
+            new_row = row.copy() 
+            new_row['EC number'] = ec.strip() 
+            new_rows.append(new_row) 
 
-    # 创建包含拆分后行的新数据框
     uniprot_EC_data_new = pd.DataFrame(new_rows)
 
-    # 打印结果
     return(uniprot_EC_data_new)    
 
 
@@ -210,24 +206,20 @@ def get_subunit_num_kinds_by_EC(uniprot_data):
     # uniprot_data = uniprot_data.head(10)
     grouped = uniprot_data.groupby('EC number')['uniprot_label'].apply(list).reset_index()
     grouped2 = uniprot_data.groupby('EC number')['Entry'].apply(list).reset_index()
-    # 创建新的数据框，存储合并后的结果
     EC_label = pd.DataFrame({
         'EC number': grouped['EC number'],
         'uniprot_label': grouped['uniprot_label'],
         'Entry':grouped2['Entry']
     })
 
-    # 打印结果
     return(EC_label)
 
 
 def sequence_alignment(row):
     seq1 = row['seq1']
     seq2 = row['seq2']
-    # 进行全局比对
     alignments = pairwise2.align.globalxx(seq1, seq2)
 
-    # 获取最佳比对结果
     best_alignment = alignments[0]
     aligned_seq1 = best_alignment[0]
     aligned_seq2 = best_alignment[1]

@@ -433,7 +433,6 @@ def get_ec_subunit_num_ratio(ori_data,ec_subunit_num_ratio_png):
                         }
             )
 
-    # 图例信息
     legend_title = 'NS'
     legend_name = [1,2,3,4,5]
 
