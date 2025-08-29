@@ -1,57 +1,62 @@
 # DeepSub
 
 ## Introduction
+
 DeepSub is a tool designed to predict the number of subunits in a protein sequence for homo-oligomers.
 
 ## Installation
-``` shell
+
+```shell
 $ git clone  https://github.com/tibbdc/DeepSub.git
 ```
 
-``` shell
+```shell
 $ cd DeepSub 
 ```
-``` shell
+
+```shell
 $ conda create -n deepsub python=3.9 
 ```
-``` shell
+
+```shell
 $ conda activate deepsub 
 ```
-``` shell
+
+```shell
 $ pip install -r requirements.txt
 ```
 
 ## Notebooks
 
 1. **01_GetData.ipynb**
+
    - Obtaining and processing data sets .
-
 2. **02_SeqIdentity.ipynb**
+
    - Sequence Identity Comparison Result.
-
 3. **03_DeepSub.ipynb**
+
    - DeepSub model and cross-validation results.
+4. **04_Queen.ipynb**
 
-5. **04_Queen.ipynb**
    - Queen model for model comparison.
+5. **05_OpenSet.ipynb**
 
-6. **05_OpenSet.ipynb**
    - OpenSet Dataset Evaluation.
 
 ## Scripts
 
 - **featurizer.py**
-  - Sequence features are extracted before model training.
 
+  - Sequence features are extracted before model training.
 - **trainer.py**
+
   - Single training function.
 
-
 ## Notice
-   
+
 We have successfully trained the model, which is now stored at **DeepSub/model/deepsub.h5**. You can simply execute the **test.ipynb** notebook to start making predictions. Should you wish to retrain the model with your custom dataset, please refer to the instructions in the "Usage" section and adjust accordingly.
 
+## How to cite:
 
-
-
-
+Rui Deng, Ke Wu, Jiawei Lin, Dehang Wang, Yuanyuan Huang, Yang Li, Zhenkun Shi, Zihan Zhang, Zhiwen Wang, Zhitao Mao, XiaopingLiao and Hongwu Ma, DeepSub: Utilizing Deep Learning for Predicting the Number of Subunits in Homo-Oligomeric Protein Complexes,International Journal of Molecular Sciences, 2024; [https://doi.org/10.3390/ijms25094803](https://doi.org/10.3390/ijms25094803)
